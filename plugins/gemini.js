@@ -1,6 +1,7 @@
 const { bot, lang } = require('../lib')
 
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-flash-latest'
+console.log(`[gemini.js] custom direct-API build loaded, model=${GEMINI_MODEL}`)
 
 bot(
   {
