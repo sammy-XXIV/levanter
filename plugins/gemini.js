@@ -1,4 +1,6 @@
-const { bot, gemini, lang } = require('../lib')
+const { bot, lang } = require('../lib')
+
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-flash-latest'
 
 bot(
   {
@@ -15,17 +17,33 @@ bot(
       return await message.send(lang.plugins.gemini.example)
     }
 
-    let image = null
+    const parts = [{ text: match || 'Describe this image.' }]
 
     if (message.reply_message && message.reply_message.image) {
-      image = {
-        image: await message.reply_message.downloadMediaMessage(),
-        mimetype: message.reply_message.mimetype,
-      }
+      const buffer = await message.reply_message.downloadMediaMessage()
+      parts.push({
+        inlineData: {
+          mimeType: message.reply_message.mimetype,
+          data: buffer.toString('base64'),
+        },
+      })
     }
 
-    const res = await gemini(match || 'Describe this image.', message.id, image)
+    const apiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${ctx.GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts }] }),
+      }
+    )
+    const data = await apiRes.json()
 
-    await message.send(res.data, { quoted: message.data })
+    if (data.error) {
+      return await message.send(`Gemini error: ${data.error.message}`)
+    }
+
+    const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') || 'No response.'
+    await message.send(text, { quoted: message.data })
   }
 )
