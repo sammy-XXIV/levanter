@@ -10,6 +10,9 @@
     "instance_restart": "[{0}] Instance restart ho raha hai... 🔄",
     "reconnect": "[{0}] Dobara connect kar raha hoon... ({1}) 🔄",
     "reconnect_after": "[{0}] 1 minute baad phir try karunga. ☕",
+    "waiting_internet": "[{0}] Internet nahi hai — connection wapas aane ka wait kar raha hoon... 🌐",
+    "waiting_internet_still": "[{0}] Abhi bhi offline hoon, thoda ruko... 🌐",
+    "internet_restored": "[{0}] Internet wapas aa gaya! Reconnect kar raha hoon... ✅",
     "another_login": "[{0}] Ye session kisi aur device par login hai. 🤨",
     "error_message": "```--- ⚠️ ERROR REPORT ⚠️ ---\n\nVersion  : {0}\nMessage  : {1}\nError    : {2}\nJid      : {3}\nCommand  : {4}\nPlatform : {5}```\n\n```-----``` *Made by LyFE with ❣* ```-----```",
     "deleted_message": "🗑️ Delete kiya gaya message",
@@ -43,7 +46,7 @@
     "screenshot_error": "Screenshot lene mein error. 📸❌",
     "id_missing": "ID missing hai. 🕵️",
     "not_on_whatsapp": "{0} WhatsApp par nahi hai. 👻",
-    "yt_auth_required": "Download fail: YouTube authentication maangta hai. 🗝️\n\n*Solutions:*\n1. *Google Auth:* Apna Google account link karne ke liye `.gauth auth` use karo.\n2. *YT_COOKIE:* `YT_COOKIE` environment variable set karo.\nWiki: https://github.com/lyfe00011/levanter/wiki/yt%E2%80%90cookie\n\n*Error:* {0}"
+    "yt_auth_required": "Download fail: YouTube authentication maangta hai. 🗝️\n\n*Solutions:*\n1. *YouTube Login:* `.ytlogin` bhejo aur apne account par approve karo.\n2. *YT_COOKIE:* `YT_COOKIE` environment variable set karo.\nWiki: https://github.com/lyfe00011/levanter/wiki/yt%E2%80%90cookie\n\n*Error:* {0}"
   },
   "plugins": {
     "common": {
@@ -64,6 +67,7 @@
       "video_not_supported": "Is bot mein music engine video downloads support nahi karta.",
       "audio_disabled": "Music engine download fail ho gaya aur YouTube audio disabled hai.",
       "gemini_missing_api_key": "GEMINI_API_KEY nahi hai",
+      "openrouter_missing_api_key": "OPENROUTER_API_KEY nahi hai",
       "gemini_error": "error",
       "upscale_upload_failed": "Image upload nahi ho saki",
       "upscale_invalid_response": "Upscale service se invalid response",
@@ -260,6 +264,10 @@
       "goodbye_disable": "_Goodbye बंद हो गया_",
       "goodbye_delete": "_Goodbye संदेश हटा दिया गया_",
       "goodbye_not_set": "_पहले goodbye संदेश सेट करें!_\n\n> *उदाहरण:*\ngoodbye अलविदा &mention! हमारे साथ रहने के लिए धन्यवाद\n\nफिर उपयोग करें: goodbye on"
+    },
+    "openrouter": {
+      "example": "*Example:* or Hi\n\nOPENROUTER_API_KEY chahiye (free, bina card). Optional variables:\n- OPENROUTER_MODEL (default: openai/gpt-oss-20b:free)\n- OPENROUTER_SYSTEM_MSG\n\nFree key lein: https://openrouter.ai/keys\nFree models: https://openrouter.ai/models?max_price=0",
+      "desc": "OpenRouter AI ke saath interact karo (free models)"
     },
     "groq": {
       "example": "*Example:* groq Hi\n\nAap optionally ye environment variables set kar sakte hain:\n- GROQ_API_KEY\n- GROQ_MODEL\n- GROQ_SYSTEM_MSG\n\nZyada details ke liye, yahan jayein: https://console.groq.com/keys",
@@ -468,8 +476,8 @@
       "desc": "Aane waale calls ko automatically reject karo."
     },
     "read": {
-      "usage": "Usage: read on | off",
-      "desc": "Aane waale messages ko automatically read karo ya band karo."
+      "usage": "Usage: read on | off | p | g | jid,jid | ignore jid,jid\np = sirf personal chats, g = sirf groups\nSaath me bhi use kar sakte ho: read p 123@g.us (personal + wo group)\nread g ignore 123@g.us (us group ke alawa sab groups)",
+      "desc": "Aane waale messages ko automatically read karo: sab, sirf personal (p), sirf groups (g), specific JIDs, ya ignore kiye JIDs ke alawa sab."
     },
     "online": {
       "usage": "Usage: online on | off",
@@ -916,6 +924,15 @@
       "id": "ID",
       "short_id_info": "\n\n*नोट:* डिलीट कमांड के लिए आपको आईडी के पहले 2-4 अक्षर ही डालने होंगे।"
     },
+    "ytlogin": {
+      "desc": ".song / .video download ke liye YouTube account link karo (device-code login).\n`.ytlogin`, `.ytlogin status`, ya `.ytlogin logout` use karo.",
+      "status_in": "*YouTube:* logged in ✅",
+      "status_out": "*YouTube:* logged in nahi. `.ytlogin` use karo.",
+      "logout": "*YouTube:* logout ho gaya.",
+      "prompt": "*YouTube Login*\n\n1. Kholo: {0}\n2. Code daalo: *{1}*\n3. Access approve karo.\n\nApproval ka wait kar raha hoon… ho jaane par yahin bata dunga. Code jaldi expire hota hai.",
+      "success": "*YouTube login success ✅*\n.song / .video ab tumhara account use karenge.",
+      "failed": "*YouTube login fail:* {0}"
+    },
     "gauth": {
       "desc": "YouTube आयु-प्रतिबंध, Google Drive, Calendar और Tasks जैसी सुविधाओं के लिए Google API प्रमाणीकरण प्रबंधित करें।",
       "usage": "*Google Auth Commands:*\n\n- `.gauth auth` — प्रमाणीकरण प्रक्रिया शुरू करें।\n- `.gauth code <url_or_code>` — प्रमाणीकरण कोड सत्यापित करें।\n- `.gauth import` — `credentials.json` आयात करें (फ़ाइल को उत्तर दें)।\n- `.gauth status` — वर्तमान प्रमाणीकरण स्थिति जांचें।\n- `.gauth logout` — इस सत्र के लिए क्रेडेंशियल्स और टोकन साफ़ करें।\n\n*नोट:* Google Auth सामान्य YouTube सुविधाओं के लिए वैकल्पिक है, लेकिन आयु-प्रतिबंधित वीडियो और Google Drive/Calendar/Tasks एकीकरण के लिए आवश्यक है।",
@@ -1088,5 +1105,12 @@
       "remaining": "Remaining :",
       "error_prefix": "HEROKU : {0}"
     }
+  },
+  "api": {
+    "title": "⚡ API मोड",
+    "send": "टेक्स्ट संदेश भेजें:",
+    "endpoints": "एंडपॉइंट्स:",
+    "note": "⚠️ API_PUBLIC_URL सेट नहीं है — मीडिया/वेबहुक डाउनलोड लिंक काम नहीं करेंगे। इसे अपने पब्लिक बेस URL पर सेट करें।",
+    "locked": "⚠️ API_KEY सेट नहीं है — api लॉक है"
   }
 }

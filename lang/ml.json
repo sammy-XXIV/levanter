@@ -10,6 +10,9 @@
     "instance_restart": "[{0}] Restart aavunnu... Ippo varaam! 🔄",
     "reconnect": "[{0}] Connection poyi. Veendum try cheyyunnu... ({1}) 🔄",
     "reconnect_after": "[{0}] 1 minute kazhinju veendum try cheyyaam. ☕",
+    "waiting_internet": "[{0}] Internet illa — connection thirich varaan kaathirikkunnu... 🌐",
+    "waiting_internet_still": "[{0}] Ippozhum offline aanu, kurach kaathirikku... 🌐",
+    "internet_restored": "[{0}] Internet thirich vannu! Veendum connect cheyyunnu... ✅",
     "another_login": "[{0}] Vere oru device-il login aayittund! 🤨",
     "error_message": "```--- ⚠️ ERROR REPORT ⚠️ ---\n\nVersion  : {0}\nMessage  : {1}\nError    : {2}\nJid      : {3}\nCommand  : {4}\nPlatform : {5}```\n\n```-----``` *Made by LyFE with ❣* ```-----```",
     "deleted_message": "🗑️ Delete cheytha message",
@@ -43,7 +46,7 @@
     "screenshot_error": "Screenshot edukkaan pattiyilla. 📸❌",
     "id_missing": "ID kittiyilla. 🕵️",
     "not_on_whatsapp": "{0} WhatsApp-il illa. 👻",
-    "yt_auth_required": "Download fail aayi! YouTube authentication venam. 🗝️\n\n*Solutions:*\n1. *Google Auth:* `.gauth auth` use cheyyu.\n2. *YT_COOKIE:* `YT_COOKIE` environment variable set cheyyu.\nWiki: https://github.com/lyfe00011/levanter/wiki/yt%E2%80%90cookie\n\n*Error:* {0}"
+    "yt_auth_required": "Download fail aayi! YouTube authentication venam. 🗝️\n\n*Solutions:*\n1. *YouTube Login:* `.ytlogin` ayakku, account approve cheyyu.\n2. *YT_COOKIE:* `YT_COOKIE` environment variable set cheyyu.\nWiki: https://github.com/lyfe00011/levanter/wiki/yt%E2%80%90cookie\n\n*Error:* {0}"
   },
   "plugins": {
     "common": {
@@ -64,6 +67,7 @@
       "video_not_supported": "Ee bot-il music engine video downloads support cheyyilla.",
       "audio_disabled": "Music engine download fail aayi, YouTube audio off aanu.",
       "gemini_missing_api_key": "GEMINI_API_KEY illa",
+      "openrouter_missing_api_key": "OPENROUTER_API_KEY illa",
       "gemini_error": "error",
       "upscale_upload_failed": "Image upload aayilla",
       "upscale_invalid_response": "Upscale service-il ninnu invalid response",
@@ -260,6 +264,10 @@
       "goodbye_disable": "_Goodbye Off aayitto_",
       "goodbye_delete": "_Goodbye message delete aayi_",
       "goodbye_not_set": "_Adyam goodbye message set cheyyu!_\n\n> *Example:*\ngoodbye Bye &mention! Koode undayithinu nanni\n\nEnnitt use cheyyu: goodbye on"
+    },
+    "openrouter": {
+      "example": "*Example:* or Hi\n\nOPENROUTER_API_KEY venam (free, card illa). Optional variables:\n- OPENROUTER_MODEL (default: openai/gpt-oss-20b:free)\n- OPENROUTER_SYSTEM_MSG\n\nFree key nedukkuka: https://openrouter.ai/keys\nFree models: https://openrouter.ai/models?max_price=0",
+      "desc": "OpenRouter AI-yumaayi samsarikku (free models)"
     },
     "groq": {
       "example": "*Example:* groq Hi\n\nEe environment variables venel set cheyyaam:\n- GROQ_API_KEY\n- GROQ_MODEL\n- GROQ_SYSTEM_MSG\n\nKooduthal kariyangal ivide: https://console.groq.com/keys",
@@ -468,8 +476,8 @@
       "desc": "Calls thaniye cut cheyyaan."
     },
     "read": {
-      "usage": "Usage: read on | off",
-      "desc": "Messages thaniye read cheyyaan."
+      "usage": "Usage: read on | off | p | g | jid,jid | ignore jid,jid\np = personal chats maathram, g = groups maathram\nOnnichu upayogikkam: read p 123@g.us (personal + aa group)\nread g ignore 123@g.us (aa group ozhike ella groups)",
+      "desc": "Messages thaniye read cheyyaan: ellaam, personal maathram (p), groups maathram (g), specific JIDs, allengil ignore cheytha JIDs ozhike ellaam."
     },
     "online": {
       "usage": "Usage: online on | off",
@@ -916,6 +924,15 @@
       "id": "ID",
       "short_id_info": "\n\n*Note:* Delete command-u-maayi ID-yude adyam randu moonu aksharam mathram ezhuthiyaal madhi."
     },
+    "ytlogin": {
+      "desc": ".song / .video download cheyyan YouTube account link cheyyu (device-code login).\n`.ytlogin`, `.ytlogin status`, allengil `.ytlogin logout` upayogikkuka.",
+      "status_in": "*YouTube:* login aayi ✅",
+      "status_out": "*YouTube:* login aayittilla. `.ytlogin` upayogikkuka.",
+      "logout": "*YouTube:* logout aayi.",
+      "prompt": "*YouTube Login*\n\n1. Thurakku: {0}\n2. Code type cheyyu: *{1}*\n3. Access approve cheyyu.\n\nApproval-inayi kaathirikkunnu… kazhinjaal ivide ariyikkam. Code pettennu expire aakum.",
+      "success": "*YouTube login success ✅*\n.song / .video ini ninte account upayogikkum.",
+      "failed": "*YouTube login fail:* {0}"
+    },
     "gauth": {
       "desc": "YouTube Age Restriction, Google Drive, Calendar, pinne Tasks settings manage cheyyaan Google Auth upayogikkuka.",
       "usage": "*Google Auth Commands:*\n\n- `.gauth auth` — Auth start cheyyaan.\n- `.gauth code <url_or_code>` — Auth code/URL validate cheyyaan.\n- `.gauth import` — `credentials.json` import cheyyaan (file-inu reply kodukkuka).\n- `.gauth status` — Ippozhathe status check cheyyaan.\n- `.gauth logout` — Credentials-um tokens-um clear cheyyaan.\n\n*Note:* YouTube-ile normal features-inu Google Auth nirbandhamalla. Pakshe Age-restricted videos, Google Drive/Calendar/Tasks integration ennivaykku ithu venam.",
@@ -1088,5 +1105,13 @@
       "remaining": "Baki :",
       "error_prefix": "HEROKU : {0}"
     }
-  }
+  },
+ "api": {
+    "title": "⚡ API Mode",
+    "send": "Oru text message ayakkuka:",
+    "endpoints": "Endpoints:",
+    "note": "⚠️ API_PUBLIC_URL set cheythittilla — media/webhook download links work cheyyilla. Ningalude public base URL set cheyyuka.",
+    "locked": "⚠️ API_KEY set cheythittilla — API lock aanu"
+}
+
 }
