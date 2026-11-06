@@ -1,6 +1,7 @@
 FROM quay.io/lyfe00011/md:beta
+ARG RAILWAY_GIT_COMMIT_SHA
+RUN echo "$RAILWAY_GIT_COMMIT_SHA" && git clone https://github.com/sammy-XXIV/levanter.git /root/LyFE/
 WORKDIR /root/LyFE/
-COPY . .
-RUN git init && git config user.email "bot@local" && git config user.name "bot" && git add . && git commit -m "build" --allow-empty
-RUN npm install --legacy-peer-deps
+RUN yarn install
+RUN ln -s /data/database.db database.db
 CMD ["npm", "run", "docker"]

@@ -1,25 +1,28 @@
 const { bot } = require('../lib')
-const fs = require('fs')
+const { CronJob } = require('cron')
+const { loadMemory, saveMemory, daysUntil, buildReminder } = require('../lib/sage')
 
-const MEMORY_FILE = '/tmp/sage_memory.json'
 const GEMINI_MODEL = process.env.SAGE_GEMINI_MODEL || 'gemini-3.5-flash'
 
-function loadMemory() {
-  try {
-    return JSON.parse(fs.readFileSync(MEMORY_FILE, 'utf8'))
-  } catch {
-    return { hackathons: [], notes: [] }
-  }
+async function sendDailyReminder() {
+  const text = buildReminder(loadMemory().hackathons)
+  if (!text) return
+  const res = await fetch(`http://127.0.0.1:${process.env.PORT || 3000}/api/send`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.API_KEY },
+    body: JSON.stringify({ to: process.env.SAGE_REMIND_TO, type: 'text', text }),
+  })
+  if (!res.ok) throw new Error(`/api/send returned ${res.status}`)
 }
 
-function saveMemory(mem) {
-  fs.writeFileSync(MEMORY_FILE, JSON.stringify(mem, null, 2))
-}
-
-function daysUntil(dateStr) {
-  const d = new Date(dateStr)
-  if (isNaN(d)) return null
-  return Math.ceil((d - Date.now()) / 86400000)
+if (process.env.API_KEY && process.env.SAGE_REMIND_TO) {
+  new CronJob(
+    process.env.SAGE_REMIND_CRON || '0 9 * * *',
+    () => sendDailyReminder().catch((error) => console.error('[sage] reminder failed:', error.message)),
+    null,
+    true,
+    process.env.TIMEZONE || 'Africa/Lagos'
+  )
 }
 
 bot(
