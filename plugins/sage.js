@@ -5,6 +5,21 @@ const { loadMemory, saveMemory, daysUntil, buildReminder } = require('../lib/sag
 const GROQ_MODEL = process.env.SAGE_GROQ_MODEL || 'qwen/qwen3.8-27b'
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
 
+async function fetchTweet(url) {
+  const id = url.match(/status\/(\d+)/)?.[1] || (url.match(/^\d+$/) ? url : null)
+  if (!id) return null
+  const token = ((Number(id) / 1e15) * Math.PI).toString(36).replace(/(0+|\.)/g, '')
+  const res = await fetch(`https://cdn.syndication.twimg.com/tweet-result?id=${id}&token=${token}&lang=en`, {
+    headers: { 'User-Agent': 'Mozilla/5.0' },
+  })
+  if (!res.ok) return null
+  const t = await res.json()
+  if (!t || t.__typename === 'TweetTombstone') return null
+  const text = t.note_tweet?.text || t.text || ''
+  const author = t.user?.name ? `${t.user.name} (@${t.user.screen_name})` : ''
+  return `Tweet by ${author}:\n${text}`
+}
+
 async function sendDailyReminder() {
   const text = buildReminder(loadMemory().hackathons)
   if (!text) return
@@ -36,6 +51,13 @@ bot(
     const apiKey = ctx.GROQ_API_KEY || process.env.SAGE_GROQ_API_KEY
     if (!apiKey) return message.send('*Sage:* Set GROQ_API_KEY or SAGE_GROQ_API_KEY env var.')
     if (!match) return message.send('*Sage:* Tell me something or ask me anything.')
+
+    const tweetUrl = match.match(/https?:\/\/(twitter\.com|x\.com)\/\S+\/status\/\d+/)?.[0]
+    let userMessage = match
+    if (tweetUrl) {
+      const tweetText = await fetchTweet(tweetUrl).catch(() => null)
+      if (tweetText) userMessage = `${tweetText}\n\nUser question: ${match.replace(tweetUrl, '').trim() || 'Summarize this tweet.'}`
+    }
 
     const mem = loadMemory()
     const today = new Date().toISOString().split('T')[0]
@@ -71,7 +93,7 @@ If saving, also include the save confirmation in reply.`
         model: GROQ_MODEL,
         messages: [
           { role: 'system', content: system },
-          { role: 'user', content: match },
+          { role: 'user', content: userMessage },
         ],
         response_format: { type: 'json_object' },
       }),
