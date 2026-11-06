@@ -2,7 +2,8 @@ const { bot } = require('../lib')
 const { CronJob } = require('cron')
 const { loadMemory, saveMemory, daysUntil, buildReminder } = require('../lib/sage')
 
-const GEMINI_MODEL = process.env.SAGE_GEMINI_MODEL || 'gemini-3.5-flash'
+const GROQ_MODEL = process.env.SAGE_GROQ_MODEL || 'qwen/qwen3.8-27b'
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
 
 async function sendDailyReminder() {
   const text = buildReminder(loadMemory().hackathons)
@@ -32,8 +33,8 @@ bot(
     type: 'ai',
   },
   async (message, match, ctx) => {
-    const apiKey = ctx.GEMINI_API_KEY || process.env.SAGE_GEMINI_API_KEY
-    if (!apiKey) return message.send('*Sage:* Set GEMINI_API_KEY or SAGE_GEMINI_API_KEY env var.')
+    const apiKey = ctx.GROQ_API_KEY || process.env.SAGE_GROQ_API_KEY
+    if (!apiKey) return message.send('*Sage:* Set GROQ_API_KEY or SAGE_GROQ_API_KEY env var.')
     if (!match) return message.send('*Sage:* Tell me something or ask me anything.')
 
     const mem = loadMemory()
@@ -63,28 +64,28 @@ Always respond with this JSON structure:
 }
 If saving, also include the save confirmation in reply.`
 
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: system }] },
-          contents: [{ role: 'user', parts: [{ text: match }] }],
-          generationConfig: { responseMimeType: 'application/json' },
-        }),
-      }
-    )
+    const res = await fetch(GROQ_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: match },
+        ],
+        response_format: { type: 'json_object' },
+      }),
+    })
 
     const data = await res.json()
     if (data.error) return message.send(`*Sage error:* ${data.error.message}`)
 
     let parsed
     try {
-      const raw = data.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') || '{}'
+      const raw = data.choices?.[0]?.message?.content || '{}'
       parsed = JSON.parse(raw)
     } catch {
-      const raw = data.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') || 'No response.'
+      const raw = data.choices?.[0]?.message?.content || 'No response.'
       return message.send(raw, { quoted: message.data })
     }
 
