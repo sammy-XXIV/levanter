@@ -79,12 +79,12 @@ When the user wants to save a hackathon/deadline/event, extract the name and dea
 When the user asks about their hackathons or deadlines, summarize from the saved list above.
 Otherwise just answer the question directly.
 
-Always respond with this JSON structure:
-{
-  "reply": "<your WhatsApp-formatted response, use *bold* for emphasis>",
-  "save": null | { "name": "<event name>", "deadline": "<YYYY-MM-DD>", "details": "<optional extra info>" }
-}
-If saving, also include the save confirmation in reply.`
+CRITICAL: Respond ONLY with raw JSON. No markdown, no explanation, no code blocks. Output must be parseable by JSON.parse().
+Required structure:
+{"reply":"<WhatsApp-formatted response, use *bold* for emphasis>","save":null}
+OR when saving:
+{"reply":"<confirmation message>","save":{"name":"<event name>","deadline":"<YYYY-MM-DD>","details":"<optional>"}}
+The save field must be null or a valid object. Never omit either field.`
 
     const history = (mem.history || []).slice(-10)
 
@@ -98,12 +98,22 @@ If saving, also include the save confirmation in reply.`
           ...history,
           { role: 'user', content: userMessage },
         ],
-        response_format: { type: 'json_object' },
       }),
     })
 
     const data = await res.json()
-    if (data.error) return message.send(`*Sage error:* ${data.error.message}`)
+    if (data.error) {
+      const raw = data.error?.failed_generation
+      if (!raw) return message.send(`*Sage error:* ${data.error.message}`)
+      try {
+        const parsed2 = JSON.parse(raw)
+        if (parsed2.reply) {
+          await message.send(parsed2.reply, { quoted: message.data })
+          return
+        }
+      } catch {}
+      return message.send(raw, { quoted: message.data })
+    }
 
     let parsed
     try {
