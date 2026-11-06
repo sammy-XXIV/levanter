@@ -86,6 +86,8 @@ Always respond with this JSON structure:
 }
 If saving, also include the save confirmation in reply.`
 
+    const history = (mem.history || []).slice(-10)
+
     const res = await fetch(GROQ_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
@@ -93,6 +95,7 @@ If saving, also include the save confirmation in reply.`
         model: GROQ_MODEL,
         messages: [
           { role: 'system', content: system },
+          ...history,
           { role: 'user', content: userMessage },
         ],
         response_format: { type: 'json_object' },
@@ -118,8 +121,13 @@ If saving, also include the save confirmation in reply.`
       } else {
         mem.hackathons.push(parsed.save)
       }
-      saveMemory(mem)
     }
+
+    if (!mem.history) mem.history = []
+    mem.history.push({ role: 'user', content: userMessage })
+    mem.history.push({ role: 'assistant', content: parsed.reply || 'Done.' })
+    if (mem.history.length > 20) mem.history = mem.history.slice(-20)
+    saveMemory(mem)
 
     await message.send(parsed.reply || 'Done.', { quoted: message.data })
   }
