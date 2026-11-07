@@ -2,8 +2,8 @@ const { bot } = require('../lib')
 const { CronJob } = require('cron')
 const { loadMemory, saveMemory, daysUntil, buildReminder } = require('../lib/sage')
 
-const GROQ_MODEL = process.env.SAGE_GROQ_MODEL || 'qwen/qwen3.8-27b'
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
+const ORBIO_MODEL = process.env.SAGE_ORBIO_MODEL || 'google/gemini-3.8-flash'
+const ORBIO_API_URL = 'https://api.orbio.so/api/v1/chat/completions'
 
 async function fetchTweet(url) {
   const id = url.match(/status\/(\d+)/)?.[1] || (url.match(/^\d+$/) ? url : null)
@@ -48,8 +48,8 @@ bot(
     type: 'ai',
   },
   async (message, match, ctx) => {
-    const apiKey = ctx.GROQ_API_KEY || process.env.SAGE_GROQ_API_KEY
-    if (!apiKey) return message.send('*Sage:* Set GROQ_API_KEY or SAGE_GROQ_API_KEY env var.')
+    const apiKey = ctx.ORBIO_API_KEY || process.env.SAGE_ORBIO_API_KEY
+    if (!apiKey) return message.send('*Sage:* Set ORBIO_API_KEY or SAGE_ORBIO_API_KEY env var.')
     if (!match) return message.send('*Sage:* Tell me something or ask me anything.')
 
     const tweetUrl = match.match(/https?:\/\/(twitter\.com|x\.com)\/\S+\/status\/\d+/)?.[0]
@@ -88,11 +88,11 @@ The save field must be null or a valid object. Never omit either field.`
 
     const history = (mem.history || []).slice(-10)
 
-    const res = await fetch(GROQ_API_URL, {
+    const res = await fetch(ORBIO_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
-        model: GROQ_MODEL,
+        model: ORBIO_MODEL,
         messages: [
           { role: 'system', content: system },
           ...history,
