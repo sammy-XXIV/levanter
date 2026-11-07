@@ -48,7 +48,7 @@ bot(
     type: 'ai',
   },
   async (message, match, ctx) => {
-    const apiKey = ctx.ORBIO_API_KEY || process.env.SAGE_ORBIO_API_KEY
+    const apiKey = ctx.ORBIO_API_KEY || process.env.ORBIO_API_KEY || process.env.SAGE_ORBIO_API_KEY
     if (!apiKey) return message.send('*Sage:* Set ORBIO_API_KEY or SAGE_ORBIO_API_KEY env var.')
     if (!match) return message.send('*Sage:* Tell me something or ask me anything.')
 
