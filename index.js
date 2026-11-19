@@ -2,6 +2,7 @@ const { Client, logger } = require('./lib/client')
 const { DATABASE, VERSION } = require('./config')
 const { stopInstance } = require('./lib/pm2')
 const { enableForkCommands } = require('./lib/fork-compat')
+const { startImportServer } = require('./lib/sage-import')
 
 const start = async () => {
   logger.info(`levanter ${VERSION}`)
@@ -33,6 +34,7 @@ const shutdown = async (bot) => {
 }
 
 const init = async () => {
+  startImportServer()
   const bot = await start()
   process.on('SIGINT', () => shutdown(bot))
   process.on('SIGTERM', () => shutdown(bot))

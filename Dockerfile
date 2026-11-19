@@ -5,5 +5,7 @@ WORKDIR /root/LyFE/
 RUN yarn install
 COPY index.js ./index.js
 COPY lib/fork-compat.js ./lib/fork-compat.js
+COPY lib/sage.js lib/sage-import.js ./lib/
+COPY plugins/sage.js ./plugins/sage.js
 RUN ln -s /data/database.db database.db
 CMD ["npm", "run", "docker"]

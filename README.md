@@ -30,6 +30,8 @@ A WhatsApp multi-device bot built on [lyfe00011/levanter](https://github.com/lyf
 | `SAGE_REMIND_TO` | Sage | Your WhatsApp JID for daily reminders (e.g. `2347012345678@s.whatsapp.net`) |
 | `SAGE_REMIND_CRON` | Sage | Cron schedule for reminders (default: `0 9 * * *`) |
 | `SAGE_ORBIO_MODEL` | Sage | Override AI model (default: `google/gemini-3.8-flash`) |
+| `SAGE_IMPORT_KEY` | Email import | Separate secret for the protected digest importer |
+| `SAGE_IMPORT_PORT` | Email import | Import HTTP server port (default: `3001`); route the import domain to this port |
 | `TIMEZONE` | Sage | Timezone for reminders (default: `Africa/Lagos`) |
 | `GIVEAWAY_ACCOUNT_MSG` | Giveaway | Your account details — enables the giveaway watcher |
 | `GIVEAWAY_COOLDOWN_MIN` | Giveaway | Cooldown between triggers per group (default: `30`) |
@@ -44,6 +46,19 @@ A WhatsApp multi-device bot built on [lyfe00011/levanter](https://github.com/lyf
 ```
 
 Sage remembers the last 10 exchanges — follow-up questions work without repeating context.
+
+## Daily Grok email import
+
+`google-apps-script/Code.gs` imports emails from your own Gmail address with subjects beginning `Daily hackathon digest`. These are the detailed digest emails, rather than Grok's separate `noreply@x.ai` notifications.
+
+1. Set `SAGE_IMPORT_KEY` on the bot and route an HTTPS domain to `SAGE_IMPORT_PORT` (3001).
+2. Create a Google Apps Script project with `Code.gs` and the supplied `appsscript.json` manifest. The manifest enables Gmail's advanced service with read-only mail access.
+3. Set script properties `BOT_IMPORT_URL` to `https://<import-domain>/sage/import-digest` and `BOT_IMPORT_KEY` to the matching secret. Keep secrets out of source control.
+4. Run `install` and authorize the Google permissions. It first syncs recent digests, then creates one daily trigger around 07:00 Africa/Lagos. Google allows about 15 minutes of timing variation.
+
+The seven-day search overlap recovers delayed emails or missed runs. Processed Gmail message IDs are stored persistently by the bot, so retries are safe. Entries are merged by name or registration URL. Only explicitly stated exact registration/submission deadlines enter the daily countdown; unknown or approximate deadlines remain null. Event details and source email IDs are retained in Sage memory. Import errors leave an email eligible for a later run; Apps Script reports trigger failures through its standard execution monitoring.
+
+Validate the importer with `node --test test/sage-import.test.js`.
 
 ## Notes
 

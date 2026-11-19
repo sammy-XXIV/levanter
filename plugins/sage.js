@@ -59,7 +59,7 @@ bot(
       if (tweetText) userMessage = `${tweetText}\n\nUser question: ${match.replace(tweetUrl, '').trim() || 'Summarize this tweet.'}`
     }
 
-    const mem = loadMemory()
+    let mem = loadMemory()
     const today = new Date().toISOString().split('T')[0]
 
     const memContext = mem.hackathons.length
@@ -124,6 +124,7 @@ The save field must be null or a valid object. Never omit either field.`
       return message.send(raw, { quoted: message.data })
     }
 
+    mem = loadMemory()
     if (parsed.save) {
       const existing = mem.hackathons.findIndex((h) => h.name.toLowerCase() === parsed.save.name.toLowerCase())
       if (existing >= 0) {
